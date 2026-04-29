@@ -3,9 +3,9 @@ import { Request, Response } from "express";
 
 
 // create a user
-export const createUser = async (req: Request, res: Response) => {
+/* export const createUser = async (req: Request, res: Response) => {
     try {
-        const {name, email, title, content } = req.body;
+        const {name, email } = req.body;
 
         const user = await prisma.user.create({
             data: {
@@ -22,7 +22,7 @@ export const createUser = async (req: Request, res: Response) => {
         return res.status(500).json({ error: "Error create User"})
     }
 };
-
+ */
 
 // get all users
 export const getUsers = async (_req: Request, res: Response) => {
