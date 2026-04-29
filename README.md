@@ -1,11 +1,11 @@
 # Posts API
 
-API REST de posts. Permite hacer Crear, obtener, actualizar, y elimicacion soft de usuarios y de posts (physical deletion).j
+API REST de posts. Permite hacer Crear, obtener, actualizar, y elimicacion soft de usuarios y de posts (physical deletion).
 
 ---
 
 ## Caracteristicas
-- Crear Usuarios / post
+- Crear Usuarios / posts
 - Obtener todos los usuarios / posts
 - Obtener usuarios / posts por Id
 - Obtener posts por usuario 

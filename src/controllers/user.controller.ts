@@ -31,6 +31,11 @@ export const getUsers = async (_req: Request, res: Response) => {
             where: {
                 deletedAt: null,
             },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+            },
         });
         return res.json(users)
     } catch {
@@ -42,17 +47,28 @@ export const getUsers = async (_req: Request, res: Response) => {
 export const getUser = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
-        const user = await prisma.user.findFirst({
+        
+        if (isNaN(id)) {
+            return res.status(400).json({error: "Invalid user id"})
+        }
+
+        const user = await prisma.user.findUnique({
             where: { 
                 id,
-                deletedAt: null,
              },
+             select: {
+                id: true,
+                email: true,
+                name: true,
+                deletedAt: true,
+             }
         });
 
-        if (!user) {
+        if (!user || user.deletedAt !== null) {
             return res.status(404).json({ error : "User not found"});
         }
-        return res.json(user);
+        const { deletedAt, ...safeUser} = user;
+        return res.json(safeUser);
     } catch {
         return res.status(500).json({ error: "Error getting user"})
     }
@@ -62,13 +78,25 @@ export const getUser = async (req: Request, res: Response) => {
 export const getUserWithPosts = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
-        const user = await prisma.user.findFirst({
+        const user = await prisma.user.findUnique({
             where: {
                 id,
-                deletedAt: null,
             },
-            include: {posts: true},
-        })
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                deletedAt: true,
+                posts: {
+                    select: {
+                        id: true,
+                        title: true,
+                        content: true,
+                        published: true,
+                    },
+                },
+            },
+        });
 
         if (!user) {
             return res.status(404).json({error: "User not found"});
