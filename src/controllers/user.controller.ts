@@ -11,15 +11,7 @@ export const createUser = async (req: Request, res: Response) => {
             data: {
                 name,
                 email,
-                posts: {
-                    create: {
-                        title,
-                        content,
-                        published: true,
-                    },
-                },
             },
-            include: { posts: true},
         });
         return res.status(201).json({message: "User created succesfully", data: user});
 
@@ -35,7 +27,11 @@ export const createUser = async (req: Request, res: Response) => {
 // get all users
 export const getUsers = async (_req: Request, res: Response) => {
     try {
-        const users = await prisma.user.findMany();
+        const users = await prisma.user.findMany({
+            where: {
+                deletedAt: null,
+            },
+        });
         return res.json(users)
     } catch {
         return res.status(500).json({ error: "Error getting users"});
@@ -46,8 +42,11 @@ export const getUsers = async (_req: Request, res: Response) => {
 export const getUser = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
-        const user = await prisma.user.findUnique({
-            where: { id },
+        const user = await prisma.user.findFirst({
+            where: { 
+                id,
+                deletedAt: null,
+             },
         });
 
         if (!user) {
@@ -63,8 +62,11 @@ export const getUser = async (req: Request, res: Response) => {
 export const getUserWithPosts = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
-        const user = await prisma.user.findUnique({
-            where: {id},
+        const user = await prisma.user.findFirst({
+            where: {
+                id,
+                deletedAt: null,
+            },
             include: {posts: true},
         })
 
@@ -84,7 +86,10 @@ export const updateUser = async (req: Request, res: Response) => {
         const { name, email } = req.body;
 
         const user = await prisma.user.update({
-            where: {id},
+            where: {
+                id,
+                deletedAt: null,
+            },
             data: { name, email},
         });
         return res.json(user);
@@ -92,7 +97,11 @@ export const updateUser = async (req: Request, res: Response) => {
         if (error.code === "P2025") {
             return res.status(404).json({error: "User not found"});
         }
-        return res.status(500).json({error: "Error updating User"})
+
+        if (error.code === "P2002") {
+            return res.status(400).json({error: "Email already exists"});
+        }
+        return res.status(500).json({error: "Error updating User"});
     }
 }
 
@@ -101,7 +110,10 @@ export const deleteUser = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
         const user = await prisma.user.update({
-            where: {id},
+            where: {
+                id,
+                deletedAt: null,
+            },
             data: {
                 deletedAt: new Date(),
             },
