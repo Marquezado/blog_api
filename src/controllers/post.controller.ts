@@ -5,13 +5,13 @@ import { Request, Response } from "express";
 // create a post
 export const createPost = async (req: Request, res: Response) => {
     try {
-        const { title, content, authorId} = req.body;
+        const { title, content} = req.body;
 
         const post = await prisma.post.create({
             data: {
                 title,
                 content,
-                authorId,
+                authorId: req.user!.userId,
             },
         });
 
@@ -26,8 +26,34 @@ export const getAllPosts = async (_req: Request, res: Response) => {
     try {
         const posts = await prisma.post.findMany({
             include: {
-                author: true
+                author: {
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                    }
+                }
             },
+        });
+
+        return res.json(posts);
+    } catch {
+        return res.status(500).json({error: "Error getting posts"});
+    }
+}
+
+// get all my posts
+export const getAllMyPosts = async (req: Request, res: Response) => {
+    try {
+        const posts = await prisma.post.findMany({
+            where: {
+                authorId: req.user!.userId,
+            },
+            select: {
+                id: true,
+                title: true,
+                content: true,
+            }
         });
 
         return res.json(posts);

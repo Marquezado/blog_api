@@ -17,8 +17,14 @@ model User {
   email String @unique
   name String?
   password String
+  role Role @default(USER)
   posts Post[]
   deletedAt DateTime?
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model Post {
